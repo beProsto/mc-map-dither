@@ -13,7 +13,7 @@
 /// Downscale to 128x128
 /// Dither the resulting image to the colour pallette of the maps
 
-// Bayes Dither model - https://rayferric.xyz/posts/dithering-&-shaders/
+// Bayer's Dither model - https://rayferric.xyz/posts/dithering-&-shaders/
 const int BAYER_SIZE = 4;
 const float BAYER_MATRIX[BAYER_SIZE * BAYER_SIZE] = {
 	 0.0 / 16.0, 12.0 / 16.0,  3.0 / 16.0, 15.0 / 16.0,
