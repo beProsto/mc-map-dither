@@ -57,42 +57,53 @@ int main(int argc, char** argv) {
 	uint8_t* input_image_data = stbi_load(input_filepath, &input_width, &input_height, &input_channels, 4);
 
 	if(input_image_data == NULL) {
-		printf("Input file doesn't exist.\n");
+		printf("Error: Input file doesn't exist.\n");
 		return 1;
 	}
 
-	int output_width = 128, 
-		output_height = 128, 
-		output_channels = 4;
-	uint8_t* output_image_data = malloc(output_width * output_height * output_channels);
+	if(input_width != input_height) {
+		printf("Warning: Aspect ratio of the input image isn't 1:1.\n");
+	}
 
-	memset(output_image_data, 0, output_width * output_height * output_channels);
+	int width = 128, 
+		height = 128, 
+		channels = 4;
+
+	uint8_t* resized_image_data = malloc(width * height * channels);
+	stbir_resize_uint8(
+		input_image_data, input_width, input_height, input_channels*input_width,
+		resized_image_data, width, height, channels*width, channels
+	);
+
+	uint8_t* output_image_data = malloc(width * height * channels);
+	memset(output_image_data, 0, width * height * channels);
 
 	// just dither
 	int colour_count_per_channel = 5;
 
-	for(int x = 0; x < output_width; x++) {
-		for(int y = 0; y < output_height; y++) {
+	for(int x = 0; x < width; x++) {
+		for(int y = 0; y < height; y++) {
 
-			float r = (float)input_image_data[(y*output_width+x)*output_channels + 0] / 255.0f;
-			float g = (float)input_image_data[(y*output_width+x)*output_channels + 1] / 255.0f;
-			float b = (float)input_image_data[(y*output_width+x)*output_channels + 2] / 255.0f;
+			float r = (float)resized_image_data[(y*width+x)*channels + 0] / 255.0f;
+			float g = (float)resized_image_data[(y*width+x)*channels + 1] / 255.0f;
+			float b = (float)resized_image_data[(y*width+x)*channels + 2] / 255.0f;
 
 			r = bayer_dither(r, x, y, colour_count_per_channel);
 			g = bayer_dither(g, x, y, colour_count_per_channel);
 			b = bayer_dither(b, x, y, colour_count_per_channel);
 
-			output_image_data[(y*output_width+x)*output_channels + 0] = fmin(fmax(r, 0.0f), 1.0f) * 255.0f;
-			output_image_data[(y*output_width+x)*output_channels + 1] = fmin(fmax(g, 0.0f), 1.0f) * 255.0f;
-			output_image_data[(y*output_width+x)*output_channels + 2] = fmin(fmax(b, 0.0f), 1.0f) * 255.0f;
-			output_image_data[(y*output_width+x)*output_channels + 3] = 255;
+			output_image_data[(y*width+x)*channels + 0] = fmin(fmax(r, 0.0f), 1.0f) * 255.0f;
+			output_image_data[(y*width+x)*channels + 1] = fmin(fmax(g, 0.0f), 1.0f) * 255.0f;
+			output_image_data[(y*width+x)*channels + 2] = fmin(fmax(b, 0.0f), 1.0f) * 255.0f;
+			output_image_data[(y*width+x)*channels + 3] = 255;
 
 		}
 	}
 
-	stbi_write_png(output_filepath, output_width, output_height, output_channels, output_image_data, output_width*output_channels);
+	stbi_write_png(output_filepath, width, height, channels, output_image_data, width*channels);
 
 	free(output_image_data);
+	free(resized_image_data);
 	free(input_image_data);
 
 	return 0;
