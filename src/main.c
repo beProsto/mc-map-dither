@@ -9,7 +9,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "ven/stb_image.h"
 
-// Converts a given image into one supported by the mindecraft map
+// Converts a given image into one supported by minecraft maps
 // Should:
 /// Downscale to 128x128
 /// Dither the resulting image to the colour pallette of the maps
