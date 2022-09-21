@@ -1,8 +1,9 @@
-#include <iostream>
+#include <stdio.h>
 #include <stdint.h>
-#include <algorithm>
-#include <cmath>
+#include <math.h>
 
+#define STB_IMAGE_RESIZE_IMPLEMENTATION
+#include "ven/stbi_resize.h"
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "ven/stbi_write.h"
 #define STB_IMAGE_IMPLEMENTATION
@@ -14,7 +15,7 @@
 /// Dither the resulting image to the colour pallette of the maps
 
 // Bayer's Dither model - https://rayferric.xyz/posts/dithering-&-shaders/
-const int BAYER_SIZE = 4;
+#define BAYER_SIZE 4
 const float BAYER_MATRIX[BAYER_SIZE * BAYER_SIZE] = {
 	 0.0 / 16.0, 12.0 / 16.0,  3.0 / 16.0, 15.0 / 16.0,
 	 8.0 / 16.0,  4.0 / 16.0, 11.0 / 16.0,  7.0 / 16.0,
@@ -29,7 +30,7 @@ float step(float edge, float x) {
 float bayer_dither(float val, int x, int y, int q) {
 	val *= (float)q;
 	
-	float stepbystep = std::floor(val); // val without the decimal place
+	float stepbystep = floor(val); // val without the decimal place
 
 	float delta = val - stepbystep; // delta now leaves us with only the decimal place
 
@@ -55,15 +56,15 @@ int main(int argc, char** argv) {
 	int input_width, input_height, input_channels;
 	uint8_t* input_image_data = stbi_load(input_filepath, &input_width, &input_height, &input_channels, 4);
 
-	if(input_image_data == nullptr) {
-		std::cerr << "file doesn't exist" << std::endl;
+	if(input_image_data == NULL) {
+		printf("Input file doesn't exist.\n");
 		return 1;
 	}
 
 	int output_width = 128, 
 		output_height = 128, 
 		output_channels = 4;
-	uint8_t* output_image_data = static_cast<uint8_t*>(malloc(output_width * output_height * output_channels));
+	uint8_t* output_image_data = malloc(output_width * output_height * output_channels);
 
 	memset(output_image_data, 0, output_width * output_height * output_channels);
 
@@ -81,9 +82,9 @@ int main(int argc, char** argv) {
 			g = bayer_dither(g, x, y, colour_count_per_channel);
 			b = bayer_dither(b, x, y, colour_count_per_channel);
 
-			output_image_data[(y*output_width+x)*output_channels + 0] = std::min(std::max(r, 0.0f), 1.0f) * 255.0f;
-			output_image_data[(y*output_width+x)*output_channels + 1] = std::min(std::max(g, 0.0f), 1.0f) * 255.0f;
-			output_image_data[(y*output_width+x)*output_channels + 2] = std::min(std::max(b, 0.0f), 1.0f) * 255.0f;
+			output_image_data[(y*output_width+x)*output_channels + 0] = fmin(fmax(r, 0.0f), 1.0f) * 255.0f;
+			output_image_data[(y*output_width+x)*output_channels + 1] = fmin(fmax(g, 0.0f), 1.0f) * 255.0f;
+			output_image_data[(y*output_width+x)*output_channels + 2] = fmin(fmax(b, 0.0f), 1.0f) * 255.0f;
 			output_image_data[(y*output_width+x)*output_channels + 3] = 255;
 
 		}

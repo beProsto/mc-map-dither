@@ -1,1 +1,1 @@
-g++ ./src/main.cpp -o dither && ./dither ./img/input.png ./img/output.png
+gcc ./src/main.c -o dither && ./dither ./img/input.png ./img/output.png
